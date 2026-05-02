@@ -1,0 +1,10 @@
+
+{
+  "appId": "com.afribrand.ai",
+  "appName": "AfriBrand AI",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  }
+}

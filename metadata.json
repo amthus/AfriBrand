@@ -1,0 +1,9 @@
+{
+  "name": "AfriBrand AI",
+  "description": "A Pomelli-inspired AI tool optimized for African SMEs to analyze their brand, generate culturally relevant campaigns, and create on-brand social media assets with natural language editing.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ]
+}
