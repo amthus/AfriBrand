@@ -36,7 +36,7 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
     };
     setMembers([...members, newMember]);
     setActivities([
-        { id: Math.random().toString(), user: 'You', action: `Invited ${inviteEmail} as ${inviteRole}`, timestamp: 'Just now', type: 'creation' },
+        { id: Math.random().toString(), user: 'Me', action: `Invited ${inviteEmail} as ${inviteRole}`, timestamp: 'Just now', type: 'creation' },
         ...activities
     ]);
     setInviteEmail('');
@@ -47,7 +47,7 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
     if (!member) return;
     setMembers(members.filter(m => m.id !== id));
     setActivities([
-        { id: Math.random().toString(), user: 'You', action: `Removed ${member.name} from the team`, timestamp: 'Just now', type: 'edit' },
+        { id: Math.random().toString(), user: 'Me', action: `Removed ${member.name} from the team`, timestamp: 'Just now', type: 'edit' },
         ...activities
     ]);
   };
@@ -57,7 +57,7 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
     if (!member) return;
     setMembers(members.map(m => m.id === id ? { ...m, role } : m));
     setActivities([
-        { id: Math.random().toString(), user: 'You', action: `Updated ${member.name}'s role to ${role}`, timestamp: 'Just now', type: 'edit' },
+        { id: Math.random().toString(), user: 'Me', action: `Updated ${member.name}'s role to ${role}`, timestamp: 'Just now', type: 'edit' },
         ...activities
     ]);
   };

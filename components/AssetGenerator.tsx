@@ -422,6 +422,13 @@ const AssetGenerator: React.FC<AssetGeneratorProps> = ({
               )}
               {exporting ? 'Exporting...' : 'Export All (ZIP)'}
             </button>
+            <button 
+              onClick={() => setShowCatalog(true)}
+              className="px-6 py-4 bg-green-600 text-white rounded-2xl font-black text-xs shadow-xl flex items-center justify-center gap-3 hover:bg-green-500 transition-all hover:scale-[1.02] active:scale-95 shrink-0"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+              WhatsApp Catalog
+            </button>
             <div className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-sm">
                 <div className="w-10 h-10 bg-brand-600/10 rounded-xl flex items-center justify-center text-brand-600 shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
@@ -463,6 +470,55 @@ const AssetGenerator: React.FC<AssetGeneratorProps> = ({
           </div>
         </div>
       </div>
+
+      {showCatalog && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[80vh] animate-in zoom-in duration-300">
+            <div className="p-8 border-b border-slate-100 flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-black text-slate-900">WhatsApp Product Catalog</h3>
+                <p className="text-sm text-slate-500 font-medium">Select a product to promote in your next generation</p>
+              </div>
+              <button 
+                onClick={() => setShowCatalog(false)}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {catalog.map(product => (
+                <div 
+                  key={product.id}
+                  onClick={() => {
+                    setSelectedProduct(product);
+                    setMagicPrompt(`Create a premium social media post promoting ${product.name} (${product.price}). Focus on its features: ${product.description}`);
+                    setShowCatalog(false);
+                  }}
+                  className={`group p-4 rounded-3xl border-2 transition-all cursor-pointer hover:shadow-xl ${selectedProduct?.id === product.id ? 'border-brand-600 bg-brand-50/30 shadow-lg' : 'border-slate-100 hover:border-brand-200'}`}
+                >
+                  <div className="aspect-square rounded-2xl overflow-hidden mb-4 relative">
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                    <div className="absolute top-2 right-2 px-3 py-1 bg-white/90 text-slate-900 text-[10px] font-black rounded-full shadow-sm">{product.price}</div>
+                  </div>
+                  <h4 className="font-black text-slate-900 mb-1">{product.name}</h4>
+                  <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">{product.description}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-8 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button 
+                onClick={() => setShowCatalog(false)}
+                className="px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold text-sm shadow-lg hover:bg-slate-800 transition-all hover:scale-105 active:scale-95"
+              >
+                Close Catalog
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1 space-y-8">
