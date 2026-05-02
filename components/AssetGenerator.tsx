@@ -206,36 +206,53 @@ const AssetGenerator: React.FC<AssetGeneratorProps> = ({
      
      if (platform === 'linkedin') {
          return (
-             <div className="absolute inset-0 flex flex-col pointer-events-none">
+             <div className="absolute inset-0 flex flex-col pointer-events-none bg-[#f3f2ef]">
                  {/* LinkedIn Header */}
-                 <div className="bg-white p-3 border-b border-slate-100 flex items-center gap-2">
-                     <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-800 text-[10px] font-bold">{dna.name.charAt(0)}</div>
-                     <div className="flex flex-col">
-                        <span className="text-[11px] font-bold text-slate-900 leading-none">{dna.name}</span>
-                        <span className="text-[9px] text-slate-500 mt-0.5">Brand Identity • Just now • 🌐</span>
+                 <div className="bg-white p-4 border-b border-slate-100 flex items-center gap-3">
+                     <div className="w-10 h-10 rounded-lg bg-[#0a66c2]/10 flex items-center justify-center text-[#0a66c2] text-sm font-black border border-[#0a66c2]/20">
+                        {dna.logoUrl ? <img src={dna.logoUrl} className="w-full h-full object-cover rounded-lg" alt="logo" /> : dna.name.charAt(0)}
                      </div>
+                     <div className="flex flex-col">
+                        <div className="flex items-center gap-1">
+                            <span className="text-[13px] font-bold text-slate-900 leading-none">{dna.name}</span>
+                            <span className="text-[11px] text-slate-400">• 1st</span>
+                        </div>
+                        <span className="text-[11px] text-slate-500 mt-0.5">High-impact Brand Agency • 2h • 🌐</span>
+                     </div>
+                     <button className="ml-auto text-[#0a66c2] font-bold text-[13px] pointer-events-auto">+ Follow</button>
                  </div>
                  
                  {/* Content Spacer */}
-                 <div className="flex-1"></div>
+                 <div className="flex-1 bg-white"></div>
+                 
+                 {/* Status Area */}
+                 <div className="bg-white px-4 py-2 border-t border-slate-100 flex items-center justify-between">
+                     <div className="flex items-center -space-x-1">
+                        <div className="w-4 h-4 bg-[#0a66c2] rounded-full flex items-center justify-center border border-white text-[6px] text-white">👍</div>
+                        <div className="w-4 h-4 bg-[#df704d] rounded-full flex items-center justify-center border border-white text-[6px] text-white">❤️</div>
+                        <div className="w-4 h-4 bg-[#5f9b41] rounded-full flex items-center justify-center border border-white text-[6px] text-white">👏</div>
+                        <span className="ml-2 text-[10px] text-slate-500 font-medium">124</span>
+                     </div>
+                     <div className="text-[10px] text-slate-500 font-medium hover:text-[#0a66c2] cursor-pointer pointer-events-auto">
+                        12 comments • 3 reposts
+                     </div>
+                 </div>
 
-                 {/* LinkedIn Footer */}
-                 <div className="bg-white p-3 border-t border-slate-100">
-                     <div className="flex items-center justify-between text-slate-500 mb-3 text-[10px]">
-                         <div className="flex items-center gap-1">
-                            <div className="w-3 h-3 bg-blue-600 rounded-full flex items-center justify-center text-[6px] text-white">👍</div>
-                            <div className="w-3 h-3 bg-green-600 rounded-full flex items-center justify-center text-[6px] text-white">👏</div>
-                            <span className="ml-1">48</span>
-                         </div>
-                         <div>5 comments • 1 repost</div>
-                     </div>
-                     <div className="flex justify-between border-t border-slate-200 pt-3">
-                         {['Like', 'Comment', 'Repost', 'Send'].map(action => (
-                            <div key={action} className="flex items-center gap-1 text-slate-500">
-                                <span className="text-[10px] font-semibold">{action}</span>
+                 {/* LinkedIn Footer Actions */}
+                 <div className="bg-white p-2 border-t border-slate-100 flex justify-between items-center px-4">
+                     {[
+                        { label: 'Like', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg> },
+                        { label: 'Comment', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg> },
+                        { label: 'Repost', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg> },
+                        { label: 'Send', icon: <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg> }
+                     ].map(action => (
+                        <div key={action.label} className="flex flex-col items-center gap-0.5 text-slate-500 hover:text-[#0a66c2] cursor-pointer pointer-events-auto transition-colors">
+                            <div className="p-1 px-3 rounded hover:bg-slate-100 flex items-center gap-1.5 grayscale group-hover:grayscale-0">
+                                {action.icon}
+                                <span className="text-[11px] font-bold">{action.label}</span>
                             </div>
-                         ))}
-                     </div>
+                        </div>
+                     ))}
                  </div>
              </div>
          )
@@ -542,6 +559,32 @@ const AssetGenerator: React.FC<AssetGeneratorProps> = ({
                       </div>
                     </div>
                   )}
+
+                  {/* Feedback Section */}
+                  <div className="mb-4 space-y-3 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100">
+                    <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-indigo-900 uppercase tracking-widest">Rate for AI Training</span>
+                        <div className="flex gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                                <button 
+                                    key={star} 
+                                    onClick={() => {/* Mock save feedback */}}
+                                    className={`text-sm transition-transform hover:scale-125 ${(asset.feedback?.rating || 0) >= star ? 'text-amber-500' : 'text-slate-300'}`}
+                                >
+                                    ★
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="relative">
+                        <input 
+                            type="text" 
+                            placeholder="Improvement suggestion..." 
+                            className="w-full bg-white border border-indigo-200 rounded-xl px-3 py-2 text-[11px] font-medium placeholder:text-slate-400 outline-none focus:border-indigo-500"
+                        />
+                        <button className="absolute right-2 top-1.5 text-[9px] font-black text-indigo-600 uppercase hover:text-indigo-800">Send</button>
+                    </div>
+                  </div>
 
                   <div className="flex items-center justify-between border-t border-slate-50 pt-5 gap-3">
                      <div className="flex gap-2">

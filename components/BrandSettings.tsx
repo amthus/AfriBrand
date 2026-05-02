@@ -1,9 +1,11 @@
 
 import React, { useState } from 'react';
-import { SocialAccount, SocialPlatform, TeamMember, ActivityLog, Role, Product } from '../types';
+import { SocialAccount, SocialPlatform, TeamMember, ActivityLog, Role, Product, BrandDNA } from '../types';
 import { socialService } from '../socialService';
 
 interface BrandSettingsProps {
+  dna: BrandDNA | null;
+  onUpdateDNA: (dna: BrandDNA) => void;
   socialAccounts: SocialAccount[];
   onConnectAccount: (platform: SocialPlatform) => void;
   onDisconnectAccount: (platform: SocialPlatform) => void;
@@ -12,8 +14,8 @@ interface BrandSettingsProps {
   onSwitchRole: (role: Role) => void;
 }
 
-const BrandSettings: React.FC<BrandSettingsProps> = ({ socialAccounts, onConnectAccount, onDisconnectAccount, onBack, userRole, onSwitchRole }) => {
-  const [activeTab, setActiveTab] = useState<'team' | 'integrations' | 'billing' | 'help'>('team');
+const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialAccounts, onConnectAccount, onDisconnectAccount, onBack, userRole, onSwitchRole }) => {
+  const [activeTab, setActiveTab] = useState<'team' | 'integrations' | 'guidelines' | 'billing' | 'help'>('team');
   const [members, setMembers] = useState<TeamMember[]>(socialService.getTeamMembers());
   const [activities, setActivities] = useState<ActivityLog[]>(socialService.getActivities());
   const [inviteEmail, setInviteEmail] = useState('');
@@ -101,6 +103,7 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ socialAccounts, onConnect
       <div className="flex gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
         {[
           { id: 'team', label: 'Team', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
+          { id: 'guidelines', label: 'Guidelines', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0112.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
           { id: 'integrations', label: 'Integrations', icon: 'M11 4a2 2 0 114 0v1a2 2 0 01-2 2H3a2 2 0 01-2-2V4a2 2 0 012-2h3a2 2 0 012 2v1a2 2 0 002 2h1a2 2 0 002-2V4z' },
           { id: 'billing', label: 'Billing', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
           { id: 'help', label: 'Support', icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }
@@ -216,6 +219,138 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ socialAccounts, onConnect
                     </div>
                 </div>
             </div>
+        </div>
+      )}
+
+      {activeTab === 'guidelines' && dna && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          <div className="space-y-8">
+            <h3 className="text-xl font-bold text-slate-900">Brand Identity Assets</h3>
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-8">
+              <div className="space-y-4">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Main Logo</label>
+                <div className="flex items-center gap-6">
+                  <div className="w-24 h-24 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2rem] flex items-center justify-center overflow-hidden">
+                    {dna.logoUrl ? (
+                      <img src={dna.logoUrl} className="w-full h-full object-cover" alt="Logo" />
+                    ) : (
+                      <svg className="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <input 
+                      type="file" 
+                      id="logo-upload" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (re) => {
+                            onUpdateDNA({ ...dna, logoUrl: re.target?.result as string });
+                            setActivities([{ id: Math.random().toString(), user: 'You', action: 'Uploaded new brand logo', timestamp: 'Just now', type: 'edit' }, ...activities]);
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
+                    <label htmlFor="logo-upload" className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-800 transition-colors">
+                      Change Logo
+                    </label>
+                    <p className="text-[10px] text-slate-400">SVG, PNG or JPG (max 2MB)</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Brand Colors</label>
+                <div className="flex flex-wrap gap-4">
+                  {dna.colors.map((color, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                      <input 
+                        type="color" 
+                        value={color} 
+                        onChange={(e) => {
+                          const newColors = [...dna.colors];
+                          newColors[i] = e.target.value;
+                          onUpdateDNA({ ...dna, colors: newColors });
+                        }}
+                        className="w-12 h-12 rounded-xl cursor-pointer border-4 border-white shadow-md"
+                      />
+                      <span className="text-[10px] font-mono font-bold text-slate-400">{color.toUpperCase()}</span>
+                    </div>
+                  ))}
+                  <button 
+                    onClick={() => onUpdateDNA({ ...dna, colors: [...dna.colors, '#000000'] })}
+                    className="w-12 h-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-300 hover:text-brand-500 hover:border-brand-500 transition-all"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Primary Typography</label>
+                <div className="space-y-2">
+                  {dna.fonts.map((font, i) => (
+                    <div key={i} className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={font} 
+                        onChange={(e) => {
+                          const newFonts = [...dna.fonts];
+                          newFonts[i] = e.target.value;
+                          onUpdateDNA({ ...dna, fonts: newFonts });
+                        }}
+                        className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold"
+                      />
+                      <button 
+                        onClick={() => onUpdateDNA({ ...dna, fonts: dna.fonts.filter((_, idx) => idx !== i) })}
+                        className="p-2 text-slate-300 hover:text-red-500"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button 
+                    onClick={() => onUpdateDNA({ ...dna, fonts: [...dna.fonts, 'Inter'] })}
+                    className="text-[11px] font-bold text-brand-600 uppercase tracking-widest px-1"
+                  >
+                    + Add Font Family
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <h3 className="text-xl font-bold text-slate-900">Brand DNA & Tone</h3>
+            <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6">
+               <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Brand Voice</label>
+                  <textarea 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium leading-relaxed outline-none focus:border-brand-500 transition-all"
+                    rows={3}
+                    value={dna.tone}
+                    onChange={(e) => onUpdateDNA({ ...dna, tone: e.target.value })}
+                  />
+               </div>
+               <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Visual Direction</label>
+                  <textarea 
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium leading-relaxed outline-none focus:border-brand-500 transition-all"
+                    rows={3}
+                    value={dna.imageStyle}
+                    onChange={(e) => onUpdateDNA({ ...dna, imageStyle: e.target.value })}
+                  />
+               </div>
+               <div className="p-4 bg-amber-50 rounded-2xl border border-amber-100">
+                  <p className="text-[11px] text-amber-800 font-medium leading-relaxed">
+                    <strong>Note:</strong> Changes to brand guidelines are applied globally. All future assets generated will reflect these updated rules.
+                  </p>
+               </div>
+            </div>
+          </div>
         </div>
       )}
 

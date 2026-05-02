@@ -11,6 +11,8 @@ export interface BrandDNA {
   localContext: string;
   insights: string[];
   improvements: string[];
+  logoUrl?: string; // Brand Guidelines: Logo
+  secondaryColors?: string[]; // Brand Guidelines: Secondary Palette
 }
 
 export interface Campaign {
@@ -67,6 +69,10 @@ export interface Asset {
     engagement: number;
     conversions: number;
     lastUpdated: string;
+  };
+  feedback?: {
+    rating: number;
+    comment: string;
   };
 }
 

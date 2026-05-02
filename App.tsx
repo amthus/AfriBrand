@@ -324,6 +324,10 @@ const App: React.FC = () => {
     }
   };
 
+  const updateBrandDNA = (updatedDna: BrandDNA) => {
+    setDna(updatedDna);
+  };
+
   const navigateToLegal = (type: 'privacy' | 'terms') => {
     if (step !== 'legal' && step !== 'support') setPrevStep(step);
     setLegalType(type);
@@ -423,7 +427,7 @@ const App: React.FC = () => {
         {step === 'auth' && <Auth onAuth={() => setStep('welcome')} />}
         {step === 'welcome' && <Welcome onStart={startAnalysis} t={t} />}
         {step === 'analysis' && <AnalysisTransition input={userInput} t={t} />}
-        {step === 'settings' && <BrandSettings socialAccounts={socialAccounts} onConnectAccount={handleConnectAccount} onDisconnectAccount={handleDisconnectAccount} onBack={() => setStep('welcome')} userRole={userRole} onSwitchRole={setUserRole} />}
+        {step === 'settings' && <BrandSettings dna={dna} onUpdateDNA={updateBrandDNA} socialAccounts={socialAccounts} onConnectAccount={handleConnectAccount} onDisconnectAccount={handleDisconnectAccount} onBack={() => setStep('welcome')} userRole={userRole} onSwitchRole={setUserRole} />}
         {step === 'dna' && dna && <BrandDNAView dna={dna} onNext={generateIdeas} t={t} />}
         {step === 'ideation' && <CampaignPlanner campaigns={campaigns} assets={assets} onSelect={(c) => generateCampaignAssets(c)} onViewAnalytics={() => setStep('analytics')} onGenerateMore={generateMoreIdeas} onGenerateCustom={generateCustomCampaign} t={t} country={userInput.country} userRole={userRole} />}
         {step === 'assets' && (
