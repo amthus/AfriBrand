@@ -16,6 +16,7 @@ interface AssetGeneratorProps {
   onGenerateGif: (ratio: AspectRatio) => void;
   onGenerateMagic: (prompt: string, style: GenerationStyle, ratio: AspectRatio) => void;
   onOpenStudio?: () => void;
+  onExportAll?: (format: 'zip' | 'pdf') => void;
   onRegenerate: (style: GenerationStyle, ratio: AspectRatio, product?: Product) => void;
   t: any;
   socialAccounts: SocialAccount[];
@@ -25,7 +26,7 @@ interface AssetGeneratorProps {
 }
 
 const AssetGenerator: React.FC<AssetGeneratorProps> = ({ 
-  assets, campaign, dna, onEdit, onGenerateVideo, onGenerateCarousel, onGenerateGif, onGenerateMagic, onOpenStudio, onRegenerate, t, socialAccounts, onConnectAccount, onPostAsset, userRole 
+  assets, campaign, dna, onEdit, onGenerateVideo, onGenerateCarousel, onGenerateGif, onGenerateMagic, onOpenStudio, onExportAll, onRegenerate, t, socialAccounts, onConnectAccount, onPostAsset, userRole 
 }) => {
   const [platform, setPlatform] = useState<PreviewPlatform>('instagram');
   const [currentStyle, setCurrentStyle] = useState<GenerationStyle>('natural');
@@ -154,7 +155,7 @@ const AssetGenerator: React.FC<AssetGeneratorProps> = ({
         const promises = assets.map(async (asset, index) => {
           const safeStyle = asset.style.toLowerCase();
           const safeRatio = asset.aspectRatio.replace(':', '-');
-          let fileName = `${safeTitle}_${safeStyle}_${safeRatio}_${asset.language}_${index}`;
+          let fileName = `${safeTitle}_${safeStyle}_${safeRatio}`;
           
           if (asset.type === 'video' && asset.videoUrl) {
              const response = await fetch(asset.videoUrl);
@@ -408,6 +409,18 @@ const AssetGenerator: React.FC<AssetGeneratorProps> = ({
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
               AI Creative Studio
+            </button>
+            <button 
+              onClick={() => exportAllAssets('zip')}
+              disabled={assets.length === 0 || exporting}
+              className="px-6 py-4 bg-brand-600 text-white rounded-2xl font-black text-xs shadow-xl flex items-center justify-center gap-3 hover:bg-brand-500 transition-all hover:scale-[1.02] active:scale-95 shrink-0 disabled:opacity-50"
+            >
+              {exporting ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              )}
+              {exporting ? 'Exporting...' : 'Export All (ZIP)'}
             </button>
             <div className="flex-1 bg-white p-4 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-sm">
                 <div className="w-10 h-10 bg-brand-600/10 rounded-xl flex items-center justify-center text-brand-600 shrink-0">

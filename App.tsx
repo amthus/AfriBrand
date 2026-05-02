@@ -54,6 +54,12 @@ const App: React.FC = () => {
   const t = translations[lang];
   const isLight = theme === 'light';
 
+  useEffect(() => {
+    if (step === 'assets' && assets.length === 0 && selectedCampaign) {
+      generateCampaignAssets(selectedCampaign, 'natural', '1:1');
+    }
+  }, [step, selectedCampaign, assets.length]);
+
   const startAnalysis = async (input: UserInput) => {
     setUserInput(input);
     setStep('analysis');
