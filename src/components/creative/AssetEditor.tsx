@@ -1,7 +1,8 @@
 
 import React, { useState } from 'react';
-import { Asset, BrandDNA, Role } from '../types';
-import * as aiService from '../geminiService';
+import { Asset, BrandDNA, Role, SocialPlatform } from '../../types';
+import * as aiService from '../../services/geminiService';
+import SocialPreview from './SocialPreview';
 
 interface AssetEditorProps {
   asset: Asset;
@@ -9,11 +10,13 @@ interface AssetEditorProps {
   onSave: (asset: Asset) => void;
   onBack: () => void;
   userRole: Role;
+  t: any;
 }
 
-const AssetEditor: React.FC<AssetEditorProps> = ({ asset, dna, onSave, onBack, userRole }) => {
+const AssetEditor: React.FC<AssetEditorProps> = ({ asset, dna, onSave, onBack, userRole, t }) => {
   const [command, setCommand] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [previewPlatform, setPreviewPlatform] = useState<SocialPlatform | null>(null);
 
   const handleEdit = async () => {
     if (!command.trim() || userRole === 'Viewer') return;
@@ -44,7 +47,7 @@ const AssetEditor: React.FC<AssetEditorProps> = ({ asset, dna, onSave, onBack, u
         <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
         </button>
-        <h2 className="text-3xl font-bold text-slate-900">Creative Editor</h2>
+        <h2 className="text-3xl font-bold text-slate-900">{t.assets.edit}</h2>
         {userRole === 'Viewer' && (
             <span className="px-3 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-bold uppercase">Read Only</span>
         )}
@@ -70,7 +73,7 @@ const AssetEditor: React.FC<AssetEditorProps> = ({ asset, dna, onSave, onBack, u
           
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 space-y-4">
              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">Caption</label>
+                <label className="text-xs font-bold text-slate-400 uppercase mb-1 block">{t.assets.caption}</label>
                 <p className="text-sm text-slate-700 leading-relaxed">{asset.caption}</p>
              </div>
           </div>
@@ -80,9 +83,9 @@ const AssetEditor: React.FC<AssetEditorProps> = ({ asset, dna, onSave, onBack, u
           <div className={`p-8 rounded-[2rem] text-white space-y-6 shadow-xl shadow-amber-600/20 ${userRole === 'Viewer' ? 'bg-slate-400' : 'bg-amber-600'}`}>
             <h3 className="text-xl font-bold flex items-center gap-2">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                Natural Language Editing
+                {t.assets.natural}
             </h3>
-            <p className={`${userRole === 'Viewer' ? 'text-slate-200' : 'text-amber-100'} text-sm`}>Tell the AI what to change. It's like talking to a designer.</p>
+            <p className={`${userRole === 'Viewer' ? 'text-slate-200' : 'text-amber-100'} text-sm`}>{t.loading.generic}</p>
             
             <div className="relative">
                 <textarea 
@@ -119,17 +122,37 @@ const AssetEditor: React.FC<AssetEditorProps> = ({ asset, dna, onSave, onBack, u
           <div className="bg-white p-6 rounded-[2.5rem] border border-slate-100 space-y-4">
             <h4 className="font-bold text-slate-800 px-2">Quick Tools</h4>
             <div className="grid grid-cols-2 gap-4">
-                <button className="flex flex-col items-center gap-2 p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors">
+                <button 
+                    onClick={() => setPreviewPlatform('instagram')}
+                    className="flex flex-col items-center gap-2 p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors"
+                >
                     <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                     <span className="text-xs font-semibold">Preview IG</span>
                 </button>
-                <button className="flex flex-col items-center gap-2 p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors">
+                <button 
+                    onClick={() => setPreviewPlatform('facebook')}
+                    className="flex flex-col items-center gap-2 p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors"
+                >
+                    <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"></path></svg>
+                    <span className="text-xs font-semibold">Preview FB</span>
+                </button>
+                <button 
+                    onClick={() => setPreviewPlatform('linkedin')}
+                    className="flex flex-col items-center gap-2 p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors"
+                >
+                    <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2zM4 2a2 2 0 110 4 2 2 0 010-4z"></path></svg>
+                    <span className="text-xs font-semibold">Preview LI</span>
+                </button>
+                <button 
+                    onClick={() => setPreviewPlatform('whatsapp')}
+                    className="flex flex-col items-center gap-2 p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors"
+                >
                     <svg className="w-6 h-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-                    <span className="text-xs font-semibold">Preview WhatsApp</span>
+                    <span className="text-xs font-semibold">Preview WA</span>
                 </button>
                 <button 
                   onClick={downloadAsset}
-                  className="flex flex-col items-center gap-2 p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors text-amber-600 bg-amber-50 border-amber-100"
+                  className="col-span-2 flex flex-col items-center gap-2 p-4 border border-slate-100 rounded-2xl hover:bg-slate-50 transition-colors text-amber-600 bg-amber-50 border-amber-100"
                 >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     <span className="text-xs font-semibold">Export Asset</span>
@@ -138,6 +161,15 @@ const AssetEditor: React.FC<AssetEditorProps> = ({ asset, dna, onSave, onBack, u
           </div>
         </div>
       </div>
+
+      {previewPlatform && (
+        <SocialPreview 
+            platform={previewPlatform} 
+            asset={asset} 
+            onClose={() => setPreviewPlatform(null)} 
+            t={t}
+        />
+      )}
     </div>
   );
 };

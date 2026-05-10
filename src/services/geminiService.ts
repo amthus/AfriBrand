@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { BrandDNA, Campaign, UserInput, Asset, GenerationStyle, AspectRatio, VideoQualityMode, Product } from "./types";
+import { BrandDNA, Campaign, UserInput, Asset, GenerationStyle, AspectRatio, VideoQualityMode, Product } from "../types";
 
 const getAI = () => new GoogleGenAI({ apiKey: process.env.API_KEY });
 
@@ -58,6 +58,30 @@ export const refineImageStyle = async (currentStyle: string, instruction: string
   return response.text || currentStyle;
 };
 
+export const lookupCompanyInfo = async (companyName: string) => {
+  const ai = getAI();
+  const prompt = `Act as a market researcher. Search and find information about the company: "${companyName}". 
+  Provide the most likely industry, a professional business description (50 words), and the primary African country of operation.
+  Return valid JSON: { "industry": string, "description": string, "country": string }.
+  If not found, provide plausible industry/description based on the name.`;
+
+  const result = await ai.models.generateContent({
+    model: 'gemini-3-flash-preview',
+    contents: prompt,
+    config: {
+      responseMimeType: "application/json"
+    }
+  });
+
+  const text = result.text || '{}';
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    const jsonMatch = text.match(/\{.*\}/s);
+    return jsonMatch ? JSON.parse(jsonMatch[0]) : null;
+  }
+};
+
 export const generateCampaigns = async (dna: BrandDNA, input: UserInput): Promise<Campaign[]> => {
   const ai = getAI();
   const demographicsStr = input.demographics 
@@ -92,9 +116,21 @@ export const generateCampaigns = async (dna: BrandDNA, input: UserInput): Promis
             goal: { type: Type.STRING },
             suggestedPlatforms: { type: Type.ARRAY, items: { type: Type.STRING } },
             videoScript: { type: Type.STRING },
-            scheduledDate: { type: Type.STRING }
+            scheduledDate: { type: Type.STRING },
+            postSuggestions: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  platform: { type: Type.STRING },
+                  caption: { type: Type.STRING },
+                  imagePrompt: { type: Type.STRING }
+                },
+                required: ["platform", "caption", "imagePrompt"]
+              }
+            }
           },
-          required: ["id", "title", "concept", "culturalHook", "cta", "goal", "suggestedPlatforms", "videoScript", "scheduledDate"]
+          required: ["id", "title", "concept", "culturalHook", "cta", "goal", "suggestedPlatforms", "videoScript", "scheduledDate", "postSuggestions"]
         }
       }
     }
@@ -332,9 +368,21 @@ export const generateCustomCampaign = async (dna: BrandDNA, input: UserInput, pr
           goal: { type: Type.STRING },
           suggestedPlatforms: { type: Type.ARRAY, items: { type: Type.STRING } },
           videoScript: { type: Type.STRING },
-          scheduledDate: { type: Type.STRING }
+          scheduledDate: { type: Type.STRING },
+          postSuggestions: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                platform: { type: Type.STRING },
+                caption: { type: Type.STRING },
+                imagePrompt: { type: Type.STRING }
+              },
+              required: ["platform", "caption", "imagePrompt"]
+            }
+          }
         },
-        required: ["id", "title", "concept", "culturalHook", "cta", "goal", "suggestedPlatforms", "videoScript", "scheduledDate"]
+        required: ["id", "title", "concept", "culturalHook", "cta", "goal", "suggestedPlatforms", "videoScript", "scheduledDate", "postSuggestions"]
       }
     }
   });
@@ -345,7 +393,7 @@ export const generateCustomCampaign = async (dna: BrandDNA, input: UserInput, pr
 export const generateVideoAd = async (campaign: Campaign, dna: BrandDNA, ratio: AspectRatio = '9:16', mode: VideoQualityMode = 'fast'): Promise<string> => {
   // Always create a new instance with the latest API key from env (which might be injected via window.aistudio)
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  const modelName = mode === 'high-quality' ? 'veo-3.1-generate-preview' : 'veo-3.1-fast-generate-preview';
+  const modelName = mode === 'high-quality' ? 'veo-3.1-generate-preview' : 'veo-3.1-lite-generate-preview';
   
   let veoRatio = ratio;
   if (ratio === '1:1' || ratio === '4:5') veoRatio = '9:16'; 

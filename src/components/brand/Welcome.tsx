@@ -1,6 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
-import { UserInput } from '../types';
+import React, { useState, useEffect, useCallback } from 'react';
+import { UserInput } from '../../types';
+import { AFRICAN_COUNTRIES } from '../../constants';
+import { lookupCompanyInfo } from '../../services/geminiService';
+import { Sparkles, Loader2 } from 'lucide-react';
 
 interface WelcomeProps {
   onStart: (input: UserInput) => void;
@@ -21,35 +24,61 @@ const Welcome: React.FC<WelcomeProps> = ({ onStart, t }) => {
       interests: []
     },
     preferredLanguages: ['French'],
-    currency: 'FCFA'
+    currency: 'XOF'
   });
   const [hasVeoKey, setHasVeoKey] = useState(false);
+  const [isLookingUp, setIsLookingUp] = useState(false);
 
   useEffect(() => {
     // @ts-ignore
     window.aistudio?.hasSelectedApiKey().then(setHasVeoKey);
   }, []);
 
-  const countries = [
-    { name: 'Algeria', cur: 'DZD' }, { name: 'Angola', cur: 'AOA' }, { name: 'Benin', cur: 'XOF' }, 
-    { name: 'Botswana', cur: 'BWP' }, { name: 'Burkina Faso', cur: 'XOF' }, { name: 'Burundi', cur: 'BIF' }, 
-    { name: 'Cabo Verde', cur: 'CVE' }, { name: 'Cameroon', cur: 'XAF' }, { name: 'Central African Republic', cur: 'XAF' }, 
-    { name: 'Chad', cur: 'XAF' }, { name: 'Comoros', cur: 'KMF' }, { name: 'DR Congo', cur: 'CDF' }, 
-    { name: 'Republic of Congo', cur: 'XAF' }, { name: 'Côte d\'Ivoire', cur: 'XOF' }, { name: 'Djibouti', cur: 'DJF' }, 
-    { name: 'Egypt', cur: 'EGP' }, { name: 'Equatorial Guinea', cur: 'XAF' }, { name: 'Eritrea', cur: 'ERN' }, 
-    { name: 'Eswatini', cur: 'SZL' }, { name: 'Ethiopia', cur: 'ETB' }, { name: 'Gabon', cur: 'XAF' }, 
-    { name: 'Gambia', cur: 'GMD' }, { name: 'Ghana', cur: 'GHS' }, { name: 'Guinea', cur: 'GNF' }, 
-    { name: 'Guinea-Bissau', cur: 'XOF' }, { name: 'Kenya', cur: 'KES' }, { name: 'Lesotho', cur: 'LSL' }, 
-    { name: 'Liberia', cur: 'LRD' }, { name: 'Libya', cur: 'LYD' }, { name: 'Madagascar', cur: 'MGA' }, 
-    { name: 'Malawi', cur: 'MWK' }, { name: 'Mali', cur: 'XOF' }, { name: 'Mauritania', cur: 'MRU' }, 
-    { name: 'Mauritius', cur: 'MUR' }, { name: 'Morocco', cur: 'MAD' }, { name: 'Mozambique', cur: 'MZN' }, 
-    { name: 'Namibia', cur: 'NAD' }, { name: 'Niger', cur: 'XOF' }, { name: 'Nigeria', cur: 'NGN' }, 
-    { name: 'Rwanda', cur: 'RWF' }, { name: 'Sao Tome and Principe', cur: 'STN' }, { name: 'Senegal', cur: 'XOF' }, 
-    { name: 'Seychelles', cur: 'SCR' }, { name: 'Sierra Leone', cur: 'SLL' }, { name: 'Somalia', cur: 'SOS' }, 
-    { name: 'South Africa', cur: 'ZAR' }, { name: 'South Sudan', cur: 'SSP' }, { name: 'Sudan', cur: 'SDG' }, 
-    { name: 'Tanzania', cur: 'TZS' }, { name: 'Togo', cur: 'XOF' }, { name: 'Tunisia', cur: 'TND' }, 
-    { name: 'Uganda', cur: 'UGX' }, { name: 'Zambia', cur: 'ZMW' }, { name: 'Zimbabwe', cur: 'ZWL' }
-  ].sort((a, b) => a.name.localeCompare(b.name));
+  const handleLookup = async (name: string) => {
+    if (!name || name.length < 3 || formData.description) return;
+    
+    setIsLookingUp(true);
+    try {
+      const info = await lookupCompanyInfo(name);
+      if (info) {
+        setFormData(prev => {
+          let matchedCountry = prev.country;
+          if (info.country) {
+            const found = AFRICAN_COUNTRIES.find(c => 
+              c.name.toLowerCase() === info.country.toLowerCase() || 
+              c.code.toLowerCase() === info.country.toLowerCase()
+            );
+            if (found) matchedCountry = found.name;
+          }
+
+          return {
+            ...prev,
+            description: prev.description || info.description,
+            country: matchedCountry,
+            currency: matchedCountry !== prev.country ? AFRICAN_COUNTRIES.find(c => c.name === matchedCountry)?.currency || prev.currency : prev.currency,
+            campaignGoal: prev.campaignGoal || (info.industry ? `Grow ${name} in the ${info.industry} sector` : prev.campaignGoal)
+          };
+        });
+      }
+    } catch (error) {
+      console.error("Lookup failed:", error);
+    } finally {
+      setIsLookingUp(false);
+    }
+  };
+
+  // Debounced lookup
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (formData.businessName) {
+        handleLookup(formData.businessName);
+      }
+    }, 1500);
+    return () => clearTimeout(timer);
+  }, [formData.businessName]);
+
+  const countries = AFRICAN_COUNTRIES.sort((a, b) => a.name.localeCompare(b.name));
+
 
   const availableLanguages = ['English', 'French', 'Portuguese', 'Arabic', 'Swahili', 'Wolof', 'Hausa', 'Yoruba'];
 
@@ -78,14 +107,25 @@ const Welcome: React.FC<WelcomeProps> = ({ onStart, t }) => {
         <div className="lg:col-span-2 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">{t.welcome.inputBrand}</label>
-                    <input 
-                        type="text" 
-                        placeholder="e.g. Cotonou Chic"
-                        className="w-full px-5 py-4 rounded-2xl bg-white border-2 border-slate-900 dark:bg-white/5 dark:border-transparent focus:border-brand-600 focus:bg-white dark:focus:bg-brand-950 focus:ring-4 focus:ring-brand-600/10 outline-none transition-all font-bold placeholder:font-medium placeholder:text-slate-400 text-slate-900 dark:text-white"
-                        value={formData.businessName}
-                        onChange={(e) => setFormData({...formData, businessName: e.target.value})}
-                    />
+                    <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1 flex items-center gap-2">
+                        {t.welcome.inputBrand}
+                        {isLookingUp && <Loader2 className="w-3 h-3 animate-spin text-brand-500" />}
+                    </label>
+                    <div className="relative">
+                        <input 
+                            type="text" 
+                            placeholder="e.g. Cotonou Chic"
+                            className="w-full px-5 py-4 rounded-2xl bg-white border-2 border-slate-900 dark:bg-white/5 dark:border-transparent focus:border-brand-600 focus:bg-white dark:focus:bg-brand-950 focus:ring-4 focus:ring-brand-600/10 outline-none transition-all font-bold placeholder:font-medium placeholder:text-slate-400 text-slate-900 dark:text-white"
+                            value={formData.businessName}
+                            onChange={(e) => setFormData({...formData, businessName: e.target.value})}
+                        />
+                        {isLookingUp && (
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
+                                <Sparkles className="w-4 h-4 text-brand-500 animate-pulse" />
+                                <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest">Finding...</span>
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div className="space-y-2">
                     <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">{t.welcome.inputUrl}</label>
@@ -111,7 +151,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onStart, t }) => {
             </div>
 
             <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">Campaign Goal</label>
+                <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">{t.campaign.goal}</label>
                 <input 
                     type="text" 
                     placeholder="e.g. Increase sales for the new collection"
@@ -122,7 +162,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onStart, t }) => {
             </div>
 
             <div className="bg-slate-50 dark:bg-white/5 p-6 rounded-3xl border border-slate-200 dark:border-white/10 space-y-6">
-                <h4 className="text-sm font-black uppercase tracking-[0.2em] text-brand-600">Target Demographics</h4>
+                <h4 className="text-sm font-black uppercase tracking-[0.2em] text-brand-600">{t.analytics.engagement}</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                         <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">Age Range</label>
@@ -144,7 +184,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onStart, t }) => {
                         </select>
                     </div>
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">Locations (comma separated)</label>
+                        <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">{t.analytics.reach}</label>
                         <input 
                             type="text" 
                             placeholder="e.g. Dakar, Plateau, Almadies"
@@ -158,7 +198,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onStart, t }) => {
                     </div>
                 </div>
                 <div className="space-y-2">
-                    <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">Interests (comma separated)</label>
+                    <label className="text-xs font-bold text-slate-900 dark:text-slate-400 uppercase tracking-widest ml-1">Interests</label>
                     <input 
                         type="text" 
                         placeholder="e.g. Fashion, Streetwear, Local Art"
@@ -181,7 +221,7 @@ const Welcome: React.FC<WelcomeProps> = ({ onStart, t }) => {
                             value={formData.country}
                             onChange={(e) => {
                                 const country = countries.find(c => c.name === e.target.value);
-                                setFormData({...formData, country: e.target.value, currency: country?.cur});
+                                setFormData({...formData, country: e.target.value, currency: country?.currency});
                             }}
                         >
                             {countries.map(c => <option key={c.name} value={c.name} className="text-slate-900">{c.name}</option>)}

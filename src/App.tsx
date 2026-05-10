@@ -1,23 +1,26 @@
 
 import React, { useState, useEffect } from 'react';
 import { AppStep, UserInput, BrandDNA, Campaign, Asset, GenerationStyle, AspectRatio, SocialAccount, SocialPlatform, Product, Role } from './types';
-import * as aiService from './geminiService';
-import { socialService } from './socialService';
-import Landing from './components/Landing';
-import Auth from './components/Auth';
-import Welcome from './components/Welcome';
-import AnalysisTransition from './components/AnalysisTransition';
-import BrandDNAView from './components/BrandDNAView';
-import CampaignPlanner from './components/CampaignPlanner';
-import AssetGenerator from './components/AssetGenerator';
-import AssetEditor from './components/AssetEditor';
-import CreativeStudio from './components/CreativeStudio';
-import CalendarView from './components/CalendarView';
-import AnalyticsView from './components/AnalyticsView';
-import BrandSettings from './components/BrandSettings';
-import LegalView from './components/LegalView';
-import SupportView from './components/SupportView';
-import { translations, Language } from './i18n';
+import * as aiService from './services/geminiService';
+import { socialService } from './services/socialService';
+import { authService } from './services/authService';
+import { User } from 'firebase/auth';
+import Sidebar from './components/layout/Sidebar';
+import Landing from './components/landing/Landing';
+import Auth from './components/landing/Auth';
+import Welcome from './components/brand/Welcome';
+import AnalysisTransition from './components/brand/AnalysisTransition';
+import BrandDNAView from './components/brand/BrandDNAView';
+import CampaignPlanner from './components/planner/CampaignPlanner';
+import AssetGenerator from './components/creative/AssetGenerator';
+import AssetEditor from './components/creative/AssetEditor';
+import CreativeStudio from './components/creative/CreativeStudio';
+import CalendarView from './components/planner/CalendarView';
+import AnalyticsView from './components/planner/AnalyticsView';
+import BrandSettings from './components/brand/BrandSettings';
+import LegalView from './components/landing/LegalView';
+import SupportView from './components/landing/SupportView';
+import { translations, Language } from './locales/i18n';
 
 const App: React.FC = () => {
   const [step, setStep] = useState<AppStep>('landing');
@@ -27,6 +30,10 @@ const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('fr');
   const [userRole, setUserRole] = useState<Role>('Admin');
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [user, setUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
+  
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   
   const [userInput, setUserInput] = useState<UserInput>({
     businessName: '',
@@ -48,17 +55,37 @@ const App: React.FC = () => {
   const [socialAccounts, setSocialAccounts] = useState<SocialAccount[]>([
     { platform: 'instagram', connected: false },
     { platform: 'facebook', connected: false },
-    { platform: 'whatsapp', connected: false }
+    { platform: 'whatsapp', connected: false },
+    { platform: 'linkedin', connected: false }
   ]);
 
   const t = translations[lang];
   const isLight = theme === 'light';
 
   useEffect(() => {
-    if (step === 'assets' && assets.length === 0 && selectedCampaign) {
-      generateCampaignAssets(selectedCampaign, 'natural', '1:1');
-    }
-  }, [step, selectedCampaign, assets.length]);
+    const unsubscribe = authService.onAuthChange(async (u) => {
+      setUser(u);
+      setAuthReady(true);
+      if (u) {
+        // Try to load existing DNA
+        const existingDna = await authService.getBrandDNA(u.uid);
+        if (existingDna) {
+          setDna(existingDna);
+          if (step === 'landing' || step === 'auth' || step === 'welcome') {
+            setStep('dna');
+          }
+        } else if (step === 'landing' || step === 'auth') {
+          setStep('welcome');
+        }
+      } else {
+        if (step !== 'landing' && step !== 'auth' && step !== 'legal' && step !== 'support') {
+          setStep('landing');
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [step]);
 
   const startAnalysis = async (input: UserInput) => {
     setUserInput(input);
@@ -66,6 +93,9 @@ const App: React.FC = () => {
     try {
       const result = await aiService.analyzeBrandDNA(input);
       setDna(result);
+      if (user) {
+        await authService.saveBrandDNA(user.uid, result);
+      }
       // Let the analysis animation play for at least 3 seconds
       setTimeout(() => setStep('dna'), 3500);
     } catch (error) {
@@ -345,65 +375,55 @@ const App: React.FC = () => {
     setStep('support');
   };
 
+  const handleLogout = async () => {
+    await authService.logout();
+    setStep('landing');
+  };
+
+  const showSidebar = authReady && user && !['landing', 'auth', 'analysis', 'welcome'].includes(step);
+
   return (
-    <div className={`min-h-screen flex flex-col transition-colors duration-500 ${isLight ? 'bg-slate-50 text-slate-900 light-theme' : 'bg-brand-950 text-slate-50'}`}>
-      
+    <div className={`min-h-screen flex ${isLight ? 'bg-slate-50 text-slate-900 light-theme' : 'bg-brand-950 text-slate-50'}`}>
       <div className="fixed inset-0 pointer-events-none z-0 afro-pattern opacity-100"></div>
-      
-      {step !== 'landing' && step !== 'auth' && step !== 'analysis' && (
-        <header className={`sticky top-0 z-50 border-b transition-all ${isLight ? 'bg-white/80 border-slate-200/60 backdrop-blur-xl' : 'glass-panel border-white/5'}`}>
-          <div className="max-w-7xl mx-auto px-6 h-18 flex justify-between items-center py-4">
-            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setStep('welcome')}>
-              <div className="w-10 h-10 bg-brand-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-brand-600/20 group-hover:rotate-12 transition-transform duration-300">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-              </div>
-              <div>
-                <span className={`text-lg font-bold tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>AfriBrand<span className="text-brand-600">.AI</span></span>
-                <p className="text-[10px] font-medium opacity-50 uppercase tracking-widest leading-none">Enterprise</p>
-              </div>
-            </div>
 
-            <div className="flex items-center gap-6">
-               <div className={`flex rounded-full p-1 border ${isLight ? 'bg-slate-100 border-slate-200' : 'bg-white/5 border-white/10'}`}>
-                  <button onClick={() => setLang('en')} className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${lang === 'en' ? (isLight ? 'bg-white shadow-sm text-brand-900' : 'bg-brand-600 text-white shadow-lg shadow-brand-600/20') : 'opacity-50 hover:opacity-100'}`}>EN</button>
-                  <button onClick={() => setLang('fr')} className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${lang === 'fr' ? (isLight ? 'bg-white shadow-sm text-brand-900' : 'bg-brand-600 text-white shadow-lg shadow-brand-600/20') : 'opacity-50 hover:opacity-100'}`}>FR</button>
-               </div>
-
-               <div className={`h-8 w-px ${isLight ? 'bg-slate-200' : 'bg-white/10'}`}></div>
-
-                <div className="flex items-center gap-3">
-                  {step !== 'welcome' && step !== 'landing' && step !== 'auth' && (
-                    <>
-                      <button 
-                        onClick={() => setStep('studio')}
-                        className={`p-2.5 rounded-full transition-all group ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-white/10 text-slate-400 hover:text-white'}`}
-                        title="Creative Studio"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122"></path></svg>
-                      </button>
-                      <button 
-                        onClick={() => setStep('calendar')}
-                        className={`p-2.5 rounded-full transition-all group ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-white/10 text-slate-400 hover:text-white'}`}
-                        title="Calendar"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                      </button>
-                      <button 
-                        onClick={() => setStep('settings')}
-                        className={`p-2.5 rounded-full transition-all group ${isLight ? 'hover:bg-slate-100 text-slate-500' : 'hover:bg-white/10 text-slate-400 hover:text-white'}`}
-                        title="Settings"
-                      >
-                          <svg className="w-5 h-5 group-hover:rotate-90 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                      </button>
-                    </>
-                  )}
-               </div>
-            </div>
-          </div>
-        </header>
+      {showSidebar && (
+        <Sidebar 
+          currentStep={step} 
+          onNavigate={(s) => setStep(s)} 
+          onLogout={handleLogout} 
+          user={user} 
+          t={t} 
+          isCollapsed={isSidebarCollapsed}
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
       )}
 
-      <main className={`flex-1 relative z-10 ${step === 'landing' || step === 'auth' || step === 'analysis' ? '' : 'max-w-7xl mx-auto w-full px-6 py-10'}`}>
+      <div className={`flex-1 flex flex-col transition-all duration-300 pb-20 lg:pb-0 ${showSidebar ? (isSidebarCollapsed ? 'lg:ml-20' : 'lg:ml-64') : ''}`}>
+        
+        {step !== 'landing' && step !== 'auth' && step !== 'analysis' && (
+          <header className={`sticky top-0 z-40 border-b transition-all ${isLight ? 'bg-white/80 border-slate-200/60 backdrop-blur-xl' : 'glass-panel border-white/5'}`}>
+            <div className="max-w-7xl mx-auto px-6 h-18 flex justify-between items-center py-4">
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                  className="lg:hidden p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                </button>
+                <span className="text-sm font-black opacity-50 uppercase tracking-[0.2em]">{t.nav[step] || step}</span>
+              </div>
+
+              <div className="flex items-center gap-6">
+                 <div className={`flex rounded-full p-1 border ${isLight ? 'bg-slate-100 border-slate-200' : 'bg-white/5 border-white/10'}`}>
+                    <button onClick={() => setLang('en')} className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${lang === 'en' ? (isLight ? 'bg-white shadow-sm text-brand-900' : 'bg-brand-600 text-white shadow-lg shadow-brand-600/20') : 'opacity-50 hover:opacity-100'}`}>EN</button>
+                    <button onClick={() => setLang('fr')} className={`px-3 py-1 text-xs font-bold rounded-full transition-all ${lang === 'fr' ? (isLight ? 'bg-white shadow-sm text-brand-900' : 'bg-brand-600 text-white shadow-lg shadow-brand-600/20') : 'opacity-50 hover:opacity-100'}`}>FR</button>
+                 </div>
+              </div>
+            </div>
+          </header>
+        )}
+
+        <main className={`flex-1 relative z-10 ${step === 'landing' || step === 'auth' || step === 'analysis' ? '' : 'max-w-7xl mx-auto w-full px-6 py-10'}`}>
         {loading && (
           <div className="fixed inset-0 z-[100] bg-brand-950/80 backdrop-blur-2xl flex flex-col items-center justify-center text-center p-8 transition-opacity duration-300">
             <div className="relative mb-8">
@@ -424,16 +444,19 @@ const App: React.FC = () => {
         {step === 'landing' && (
           <Landing 
             onStart={() => setStep('auth')} 
-            onNavigate={(s, t) => {
-              if (s === 'legal' && t) navigateToLegal(t);
+            onNavigate={(s, t_nav) => {
+              if (s === 'legal' && t_nav) navigateToLegal(t_nav);
               else if (s === 'support') navigateToSupport();
             }} 
+            t={t}
+            lang={lang}
+            onLanguageChange={setLang}
           />
         )}
-        {step === 'auth' && <Auth onAuth={() => setStep('welcome')} />}
+        {step === 'auth' && <Auth onAuth={() => setStep('welcome')} t={t} />}
         {step === 'welcome' && <Welcome onStart={startAnalysis} t={t} />}
         {step === 'analysis' && <AnalysisTransition input={userInput} t={t} />}
-        {step === 'settings' && <BrandSettings dna={dna} onUpdateDNA={updateBrandDNA} socialAccounts={socialAccounts} onConnectAccount={handleConnectAccount} onDisconnectAccount={handleDisconnectAccount} onBack={() => setStep('welcome')} userRole={userRole} onSwitchRole={setUserRole} />}
+        {step === 'settings' && <BrandSettings dna={dna} onUpdateDNA={updateBrandDNA} socialAccounts={socialAccounts} onConnectAccount={handleConnectAccount} onDisconnectAccount={handleDisconnectAccount} onBack={() => setStep('welcome')} userRole={userRole} onSwitchRole={setUserRole} t={t} />}
         {step === 'dna' && dna && <BrandDNAView dna={dna} onNext={generateIdeas} t={t} />}
         {step === 'ideation' && <CampaignPlanner campaigns={campaigns} assets={assets} onSelect={(c) => generateCampaignAssets(c)} onViewAnalytics={() => setStep('analytics')} onGenerateMore={generateMoreIdeas} onGenerateCustom={generateCustomCampaign} t={t} country={userInput.country} userRole={userRole} />}
         {step === 'assets' && (
@@ -462,6 +485,7 @@ const App: React.FC = () => {
             onSave={(a) => { setAssets(prev => prev.map(old => old.id === a.id ? a : old)); setSelectedAsset(a); }} 
             onBack={() => setStep('assets')}
             userRole={userRole}
+            t={t}
           />
         )}
         {step === 'studio' && dna && (
@@ -477,10 +501,10 @@ const App: React.FC = () => {
             t={t}
           />
         )}
-        {step === 'calendar' && <CalendarView campaigns={campaigns} onBack={() => setStep('assets')} />}
+        {step === 'calendar' && <CalendarView campaigns={campaigns} onBack={() => setStep('assets')} t={t} />}
         {step === 'analytics' && <AnalyticsView assets={assets} campaigns={campaigns} onBack={() => setStep('ideation')} t={t} />}
-        {step === 'legal' && <LegalView type={legalType} onBack={() => setStep(prevStep)} />}
-        {step === 'support' && <SupportView onBack={() => setStep(prevStep)} />}
+        {step === 'legal' && <LegalView type={legalType} onBack={() => setStep(prevStep)} t={t} />}
+        {step === 'support' && <SupportView onBack={() => setStep(prevStep)} t={t} />}
       </main>
 
       {step !== 'landing' && step !== 'analysis' && (
@@ -488,13 +512,14 @@ const App: React.FC = () => {
           <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-semibold uppercase tracking-wider">
              <p>© 2025 AfriBrand AI • Propriété de Malthus AMETEPE</p>
              <div className="flex gap-6 items-center">
-                <button onClick={navigateToSupport} className="hover:text-brand-600 transition-colors">Support</button>
-                <button onClick={() => navigateToLegal('privacy')} className="hover:text-brand-600 transition-colors">Privacy</button>
-                <button onClick={() => navigateToLegal('terms')} className="hover:text-brand-600 transition-colors">Terms</button>
+                <button onClick={navigateToSupport} className="hover:text-brand-600 transition-colors uppercase tracking-widest">{t.nav.support}</button>
+                <button onClick={() => navigateToLegal('privacy')} className="hover:text-brand-600 transition-colors uppercase tracking-widest">{t.landing.privacy}</button>
+                <button onClick={() => navigateToLegal('terms')} className="hover:text-brand-600 transition-colors uppercase tracking-widest">{t.landing.terms}</button>
              </div>
           </div>
         </footer>
       )}
+      </div>
     </div>
   );
 };

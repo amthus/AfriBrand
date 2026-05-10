@@ -44,7 +44,55 @@ export const translations = {
       hook: "Cultural Hook",
       share: "Share Campaign",
       smartSchedule: "Smart Schedule",
-      optimalTime: "Optimal time for"
+      optimalTime: "Optimal time for",
+      generateMore: "Generate More Ideas",
+      customTitle: "Custom Campaign Generator",
+      customSubtitle: "Describe a specific event or goal, and AI will craft a culturally relevant campaign for you.",
+      metrics: "Campaign Analytics"
+    },
+    nav: {
+      dna: "Dashboard",
+      studio: "Creative Studio",
+      ideation: "Content Planner",
+      analytics: "Analytics",
+      settings: "Settings",
+      assets: "Brand Assets",
+      editor: "Creative Editor",
+      calendar: "Content Calendar",
+      support: "Help & Support",
+      analysis: "Brand Analysis"
+    },
+    auth: {
+      login: "Login",
+      logout: "Logout",
+      user: "Owner",
+      google: "Continue with Google",
+      title: "Secure Access",
+      subtitle: "Enter the professional marketing suite.",
+      email: "Work Email",
+      pass: "Password",
+      forgot: "Forgot Password?",
+      noAccount: "Don't have an account?",
+      contact: "Contact Admin"
+    },
+    common: {
+      back: "Back",
+      next: "Next",
+      save: "Save",
+      download: "Download"
+    },
+    analytics: {
+      engagement: "Engagement Metrics",
+      reach: "Market Reach"
+    },
+    campaign: {
+      goal: "Campaign Goal",
+      schedule: "Campaign Schedule",
+      planner: "Campaign Planner"
+    },
+    ideation: {
+      customPrompt: "What are we creating?",
+      generate: "Generate On-Brand Asset"
     },
     assets: {
       hub: "Campaign Hub",
@@ -67,6 +115,27 @@ export const translations = {
         connect: "Connect",
         connected: "Connected"
       }
+    },
+    settings: {
+      profile: "Brand Profile",
+      team: "Team Management",
+      integrations: "Social Integrations",
+      danger: "Danger Zone",
+      invite: "Invite Member",
+      adminOnly: "Admin Only",
+      logo: "Brand Logo",
+      colors: "Brand Colors",
+      fonts: "Brand Typography",
+      voice: "Brand Voice",
+      vision: "Visual Direction"
+    },
+    landing: {
+      hero: "Transform Your African Brand with Generative AI",
+      cta: "Start Free Trial",
+      demo: "Watch Demo",
+      stats: "Market Leading Performance",
+      privacy: "Privacy Policy",
+      terms: "Terms of Service"
     }
   },
   fr: {
@@ -111,7 +180,55 @@ export const translations = {
       hook: "Levier Culturel",
       share: "Partager",
       smartSchedule: "Planification Intelligente",
-      optimalTime: "Heure optimale pour"
+      optimalTime: "Heure optimale pour",
+      generateMore: "Générer plus d'idées",
+      customTitle: "Générateur de campagne personnalisée",
+      customSubtitle: "Décrivez un événement ou un objectif spécifique, et l'IA créera une campagne culturellement pertinente pour vous.",
+      metrics: "Analytiques de campagne"
+    },
+    nav: {
+      dna: "Tableau de Bord",
+      studio: "Studio Créatif",
+      ideation: "Planificateur",
+      analytics: "Analytiques",
+      settings: "Paramètres",
+      assets: "Assets de Marque",
+      editor: "Éditeur Créatif",
+      calendar: "Calendrier",
+      support: "Aide & Support",
+      analysis: "Analyse de Marque"
+    },
+    auth: {
+      login: "Se Connecter",
+      logout: "Déconnexion",
+      user: "Propriétaire",
+      google: "Continuer avec Google",
+      title: "Accès Sécurisé",
+      subtitle: "Entrez dans la suite marketing professionnelle.",
+      email: "Email Professionnel",
+      pass: "Mot de passe",
+      forgot: "Mot de passe oublié ?",
+      noAccount: "Pas de compte ?",
+      contact: "Contacter l'Admin"
+    },
+    common: {
+      back: "Retour",
+      next: "Suivant",
+      save: "Enregistrer",
+      download: "Télécharger"
+    },
+    analytics: {
+      engagement: "Métriques d'Engagement",
+      reach: "Portée du Marché"
+    },
+    campaign: {
+      goal: "Objectif de Campagne",
+      schedule: "Calendrier de Campagne",
+      planner: "Planificateur de Campagne"
+    },
+    ideation: {
+      customPrompt: "Que créons-nous ?",
+      generate: "Générer un asset de marque"
     },
     assets: {
       hub: "Hub de Campagne",
@@ -134,6 +251,27 @@ export const translations = {
         connect: "Connecter",
         connected: "Connecté"
       }
+    },
+    settings: {
+      profile: "Profil de Marque",
+      team: "Gestion d'Équipe",
+      integrations: "Intégrations Sociales",
+      danger: "Zone de Danger",
+      invite: "Inviter un Membre",
+      adminOnly: "Admin Uniquement",
+      logo: "Logo de Marque",
+      colors: "Couleurs de Marque",
+      fonts: "Typographie",
+      voice: "Voix de Marque",
+      vision: "Direction Visuelle"
+    },
+    landing: {
+      hero: "Transformez votre marque africaine grâce à l'IA générative",
+      cta: "Essai Gratuit",
+      demo: "Voir Démo",
+      stats: "Performance Leader du Marché",
+      privacy: "Politique de Confidentialité",
+      terms: "Conditions d'Utilisation"
     }
   }
 };

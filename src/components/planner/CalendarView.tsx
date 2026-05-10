@@ -1,15 +1,16 @@
 
 import React, { useState } from 'react';
-import { Campaign, Role } from '../types';
+import { Campaign, Role } from '../../types';
 import { motion } from 'framer-motion';
 import { Calendar as CalendarIcon, List, Download, ChevronLeft, ChevronRight, Share2, FileText, CalendarDays } from 'lucide-react';
 
 interface CalendarViewProps {
   campaigns: Campaign[];
   onBack: () => void;
+  t: any;
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ campaigns, onBack }) => {
+const CalendarView: React.FC<CalendarViewProps> = ({ campaigns, onBack, t }) => {
   const [viewMode, setViewMode] = useState<'calendar' | 'list'>('calendar');
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -77,10 +78,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ campaigns, onBack }) => {
   const blanks = Array.from({ length: firstDay }, (_, i) => i);
 
   const monthName = currentMonth.toLocaleString('default', { month: 'long' });
-  const year = currentMonth.getFullYear();
+  const yearNum = currentMonth.getFullYear();
 
   const getCampaignsForDay = (day: number) => {
-    const dateStr = `${year}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dateStr = `${yearNum}-${String(currentMonth.getMonth() + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     return campaigns.filter(c => c.scheduledDate === dateStr);
   };
 
@@ -95,7 +96,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ campaigns, onBack }) => {
             <ChevronLeft className="w-6 h-6" />
           </button>
           <div>
-            <h2 className="text-3xl font-black tracking-tight">Campaign <span className="text-brand-600">Calendar</span></h2>
+            <h2 className="text-3xl font-black tracking-tight">{t.campaign.planner} <span className="text-brand-600">Calendar</span></h2>
             <p className="text-slate-500 font-medium">Manage and export your regional marketing schedule.</p>
           </div>
         </div>
@@ -138,16 +139,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ campaigns, onBack }) => {
       {viewMode === 'calendar' ? (
         <div className="bg-white dark:bg-brand-900/40 rounded-[2.5rem] border border-slate-100 dark:border-white/5 shadow-2xl overflow-hidden">
           <div className="p-8 border-b border-slate-100 dark:border-white/5 flex items-center justify-between">
-            <h3 className="text-xl font-black">{monthName} {year}</h3>
+            <h3 className="text-xl font-black">{monthName} {yearNum}</h3>
             <div className="flex gap-2">
               <button 
-                onClick={() => setCurrentMonth(new Date(year, currentMonth.getMonth() - 1, 1))}
+                onClick={() => setCurrentMonth(new Date(yearNum, currentMonth.getMonth() - 1, 1))}
                 className="p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
               <button 
-                onClick={() => setCurrentMonth(new Date(year, currentMonth.getMonth() + 1, 1))}
+                onClick={() => setCurrentMonth(new Date(yearNum, currentMonth.getMonth() + 1, 1))}
                 className="p-2 hover:bg-slate-50 dark:hover:bg-white/5 rounded-lg border border-slate-200 dark:border-white/10"
               >
                 <ChevronRight className="w-5 h-5" />

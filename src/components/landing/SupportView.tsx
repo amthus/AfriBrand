@@ -3,9 +3,10 @@ import React, { useState } from 'react';
 
 interface SupportViewProps {
   onBack: () => void;
+  t: any;
 }
 
-const SupportView: React.FC<SupportViewProps> = ({ onBack }) => {
+const SupportView: React.FC<SupportViewProps> = ({ onBack, t }) => {
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -20,7 +21,7 @@ const SupportView: React.FC<SupportViewProps> = ({ onBack }) => {
         className="mb-8 flex items-center gap-2 text-slate-500 hover:text-brand-600 transition-colors font-bold text-sm uppercase tracking-widest"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        Go Back
+        {t.nav.back}
       </button>
 
       <div className="bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-100 space-y-10 text-slate-800">

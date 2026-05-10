@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { UserInput } from '../types';
+import { UserInput } from '../../types';
 
 interface AnalysisTransitionProps {
   input: UserInput;
@@ -51,7 +51,7 @@ const AnalysisTransition: React.FC<AnalysisTransitionProps> = ({ input, t }) => 
         </div>
 
         <div className="space-y-4">
-            <h2 className="text-3xl font-black text-white tracking-tight">Analyzing <span className="text-brand-500">{input.businessName}</span></h2>
+            <h2 className="text-3xl font-black text-white tracking-tight">{t.dna.analyzing} <span className="text-brand-500">{input.businessName}</span></h2>
             <p className="text-slate-500 font-mono text-xs uppercase tracking-[0.3em] h-4">{currentAction}</p>
         </div>
 
@@ -65,7 +65,7 @@ const AnalysisTransition: React.FC<AnalysisTransitionProps> = ({ input, t }) => 
             <div className="flex justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest">
                 <span>0% Initiated</span>
                 <span>{progress}% Optimized</span>
-                <span>100% African DNA</span>
+                <span>100% {input.country} DNA</span>
             </div>
         </div>
 

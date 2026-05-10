@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { Campaign, Asset, Role } from '../types';
-import { socialService } from '../socialService';
+import { Campaign, Asset, Role } from '../../types';
+import { socialService } from '../../services/socialService';
 
 interface CampaignPlannerProps {
   campaigns: Campaign[];
@@ -154,7 +154,7 @@ const CampaignPlanner: React.FC<CampaignPlannerProps> = ({ campaigns, assets = [
             ) : (
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
             )}
-            {isGenerating ? 'Exploring...' : 'Generate More Ideas'}
+            {isGenerating ? 'Exploring...' : t.planner.generateMore}
           </button>
         </div>
       </div>
@@ -165,8 +165,8 @@ const CampaignPlanner: React.FC<CampaignPlannerProps> = ({ campaigns, assets = [
               <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
           </div>
           <div className="flex-1 space-y-1">
-              <h4 className="text-lg font-bold text-slate-900">Custom Campaign Generator</h4>
-              <p className="text-sm text-slate-500 font-medium">Describe a specific event or goal, and AI will craft a culturally relevant campaign for you.</p>
+              <h4 className="text-lg font-bold text-slate-900">{t.planner.customTitle}</h4>
+              <p className="text-sm text-slate-500 font-medium">{t.planner.customSubtitle}</p>
           </div>
           <div className="flex-1 w-full md:w-auto flex gap-3">
               <input 
@@ -190,7 +190,7 @@ const CampaignPlanner: React.FC<CampaignPlannerProps> = ({ campaigns, assets = [
                 disabled={!customPrompt.trim() || isGeneratingCustom || userRole === 'Viewer'}
                 className="px-6 py-3 bg-brand-600 text-white rounded-xl font-bold text-sm hover:bg-brand-500 transition-all disabled:opacity-50"
               >
-                {isGeneratingCustom ? 'Creating...' : 'Generate'}
+                {isGeneratingCustom ? 'Creating...' : t.ideation.generate}
               </button>
           </div>
       </div>
@@ -331,6 +331,34 @@ const CampaignPlanner: React.FC<CampaignPlannerProps> = ({ campaigns, assets = [
                 <span key={i} className="text-[10px] font-bold text-slate-500 border border-slate-200 px-2 py-1 rounded-md uppercase tracking-wider bg-white">{p}</span>
               ))}
             </div>
+
+            {camp.postSuggestions && camp.postSuggestions.length > 0 && (
+                <div className="mb-6 space-y-3">
+                    <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-3.5 h-3.5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <h5 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">AI Post Blueprints</h5>
+                    </div>
+                    <div className="space-y-2">
+                        {camp.postSuggestions.map((suggestion, idx) => (
+                            <div key={idx} className="p-3 bg-brand-50/50 rounded-xl border border-brand-100 group/item">
+                                <div className="flex justify-between items-center mb-2">
+                                    <span className="text-[9px] font-black text-brand-700 uppercase tracking-tighter">{suggestion.platform}</span>
+                                    <button 
+                                        className="opacity-0 group-hover/item:opacity-100 text-[8px] font-black text-brand-600 uppercase tracking-widest transition-opacity"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            navigator.clipboard.writeText(suggestion.imagePrompt);
+                                        }}
+                                    >
+                                        Copy Prompt
+                                    </button>
+                                </div>
+                                <p className="text-[11px] text-slate-700 leading-relaxed font-medium line-clamp-2 italic">"{suggestion.caption}"</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             <div className="border-t border-slate-100 pt-6 flex items-center justify-between">
                 <div className="text-xs font-medium text-slate-400">

@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { SocialAccount, SocialPlatform, TeamMember, ActivityLog, Role, Product, BrandDNA } from '../types';
-import { socialService } from '../socialService';
+import { SocialAccount, SocialPlatform, TeamMember, ActivityLog, Role, Product, BrandDNA } from '../../types';
+import { socialService } from '../../services/socialService';
 
 interface BrandSettingsProps {
   dna: BrandDNA | null;
@@ -12,10 +12,12 @@ interface BrandSettingsProps {
   onBack: () => void;
   userRole: Role;
   onSwitchRole: (role: Role) => void;
+  user: any;
+  t: any;
 }
 
-const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialAccounts, onConnectAccount, onDisconnectAccount, onBack, userRole, onSwitchRole }) => {
-  const [activeTab, setActiveTab] = useState<'team' | 'integrations' | 'guidelines' | 'billing' | 'help'>('team');
+const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialAccounts, onConnectAccount, onDisconnectAccount, onBack, userRole, onSwitchRole, user, t }) => {
+  const [activeTab, setActiveTab] = useState<'profile' | 'team' | 'integrations' | 'guidelines' | 'billing' | 'help'>('profile');
   const [members, setMembers] = useState<TeamMember[]>(socialService.getTeamMembers());
   const [activities, setActivities] = useState<ActivityLog[]>(socialService.getActivities());
   const [inviteEmail, setInviteEmail] = useState('');
@@ -24,9 +26,27 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
   const [isSyncing, setIsSyncing] = useState(false);
   const [products, setProducts] = useState<Product[]>(socialService.getMockCatalog());
 
+  const [timezone, setTimezone] = useState('Lagos (GMT+1)');
+  const [locale, setLocale] = useState('English (Pan-African)');
+  const [isSaving, setIsSaving] = useState(false);
+  const [showSavedToast, setShowSavedToast] = useState(false);
+
+  const handleSaveProfile = () => {
+    setIsSaving(true);
+    // Simulate save
+    setTimeout(() => {
+      setIsSaving(false);
+      setShowSavedToast(true);
+      setTimeout(() => setShowSavedToast(false), 3000);
+    }, 1000);
+  };
+
+  const isEditor = userRole === 'Editor' || userRole === 'Admin';
+  const isAdmin = userRole === 'Admin';
+
   const handleInvite = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteEmail) return;
+    if (!isAdmin || !inviteEmail) return;
     const newMember: TeamMember = {
       id: Math.random().toString(36).substr(2, 9),
       name: inviteEmail.split('@')[0],
@@ -81,7 +101,7 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
             <button onClick={onBack} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             </button>
-            <h2 className="text-3xl font-black text-slate-900">Brand HQ Settings</h2>
+            <h2 className="text-3xl font-black text-slate-900">{t.settings.profile} Settings</h2>
         </div>
         
         <div className="flex items-center gap-3 bg-white p-2 rounded-xl border border-slate-200 shadow-sm">
@@ -102,11 +122,12 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
 
       <div className="flex gap-6 border-b border-slate-200 overflow-x-auto no-scrollbar">
         {[
-          { id: 'team', label: 'Team', icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
+          { id: 'profile', label: 'Profile', icon: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z' },
+          { id: 'team', label: t.settings.team, icon: 'M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197' },
           { id: 'guidelines', label: 'Guidelines', icon: 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414A1 1 0 0112.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' },
-          { id: 'integrations', label: 'Integrations', icon: 'M11 4a2 2 0 114 0v1a2 2 0 01-2 2H3a2 2 0 01-2-2V4a2 2 0 012-2h3a2 2 0 012 2v1a2 2 0 002 2h1a2 2 0 002-2V4z' },
+          { id: 'integrations', label: t.settings.integrations, icon: 'M11 4a2 2 0 114 0v1a2 2 0 01-2 2H3a2 2 0 01-2-2V4a2 2 0 012-2h3a2 2 0 012 2v1a2 2 0 002 2h1a2 2 0 002-2V4z' },
           { id: 'billing', label: 'Billing', icon: 'M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z' },
-          { id: 'help', label: 'Support', icon: 'M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }
+          { id: 'help', label: 'Support', icon: 'M8.228 9.5a.5.5 0 01.5-.5h6a.5.5 0 010 1h-6a.5.5 0 01-.5-.5z' }
         ].map((tab) => (
           <button 
               key={tab.id}
@@ -119,11 +140,93 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
         ))}
       </div>
 
+      {activeTab === 'profile' && (
+        <div className="max-w-2xl mx-auto space-y-10 animate-in slide-in-from-bottom duration-500">
+            <div className="bg-white p-10 rounded-[3rem] shadow-sm border border-slate-100 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500/10 rounded-full -mr-16 -mt-16"></div>
+                <div className="flex flex-col items-center text-center space-y-6">
+                    <div className="relative group">
+                        <div className="w-24 h-24 rounded-full bg-brand-600/10 border-4 border-white shadow-xl flex items-center justify-center overflow-hidden">
+                            {user?.photoURL ? (
+                                <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            ) : (
+                                <span className="text-3xl font-black text-brand-600">{user?.displayName?.substring(0, 1) || user?.email?.substring(0,1).toUpperCase() || 'B'}</span>
+                            )}
+                        </div>
+                        <button className="absolute bottom-0 right-0 w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center shadow-lg border-2 border-white hover:bg-brand-600 transition-colors">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        </button>
+                    </div>
+                    <div className="space-y-1">
+                        <h3 className="text-2xl font-black text-slate-900">{user?.displayName || 'Business Owner'}</h3>
+                        <p className="text-slate-400 font-medium">{user?.email}</p>
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-50 text-brand-700 rounded-full text-[10px] font-black uppercase tracking-widest">
+                            {userRole} Account
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-10 pt-10 border-t border-slate-50 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Full Name</label>
+                        <input type="text" readOnly value={user?.displayName || ''} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-600" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Email Address</label>
+                        <input type="email" readOnly value={user?.email || ''} className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold text-slate-600" />
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Timezone</label>
+                        <select 
+                          value={timezone}
+                          onChange={(e) => setTimezone(e.target.value)}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-amber-500"
+                        >
+                            <option>Lagos (GMT+1)</option>
+                            <option>Nairobi (GMT+3)</option>
+                            <option>Johannesburg (GMT+2)</option>
+                            <option>Casablanca (GMT+1)</option>
+                            <option>Accra (GMT+0)</option>
+                        </select>
+                    </div>
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1">Preferred Locale</label>
+                        <select 
+                          value={locale}
+                          onChange={(e) => setLocale(e.target.value)}
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm font-bold outline-none focus:border-amber-500"
+                        >
+                            <option>French (West Africa)</option>
+                            <option>English (Pan-African)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div className="mt-10 flex flex-col gap-4">
+                    <button 
+                      onClick={handleSaveProfile}
+                      disabled={isSaving}
+                      className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold shadow-xl hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                    >
+                      {isSaving && <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>}
+                      {isSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    {showSavedToast && (
+                      <div className="flex items-center justify-center gap-2 text-emerald-600 text-xs font-bold animate-in fade-in slide-in-from-top-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                        Profile updated successfully
+                      </div>
+                    )}
+                </div>
+            </div>
+        </div>
+      )}
+
       {activeTab === 'team' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
                 <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-slate-100">
-                    <h3 className="text-xl font-bold text-slate-900 mb-6">Team Members</h3>
+                    <h3 className="text-xl font-bold text-slate-900 mb-6">{t.settings.team}</h3>
                     <div className="space-y-4">
                         {members.map(member => (
                             <div key={member.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl group transition-all hover:bg-white hover:shadow-md border border-transparent hover:border-slate-100">
@@ -166,37 +269,37 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
                         ))}
                     </div>
 
-                    {userRole === 'Admin' ? (
-                        <div className="mt-8 pt-8 border-t border-slate-100">
-                            <h4 className="text-sm font-bold text-slate-900 mb-4">Invite New Member</h4>
-                            <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4">
-                                <input 
-                                    type="email" 
-                                    placeholder="colleague@agency.com" 
-                                    className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-sm"
-                                    value={inviteEmail}
-                                    onChange={(e) => setInviteEmail(e.target.value)}
-                                    required
-                                />
-                                <select 
-                                    value={inviteRole}
-                                    onChange={(e) => setInviteRole(e.target.value as Role)}
-                                    className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-sm font-bold"
-                                >
-                                    <option value="Admin">Admin</option>
-                                    <option value="Editor">Editor</option>
-                                    <option value="Viewer">Viewer</option>
-                                </select>
-                                <button type="submit" className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors">
-                                    Send Invite
-                                </button>
-                            </form>
-                        </div>
-                    ) : (
-                        <div className="mt-8 pt-8 border-t border-slate-100 text-center text-slate-400 text-sm">
-                            <p>You must be an Admin to invite new members.</p>
-                        </div>
-                    )}
+              {userRole === 'Admin' ? (
+                <div className="mt-8 pt-8 border-t border-slate-100">
+                  <h4 className="text-sm font-bold text-slate-900 mb-4">{t.settings.invite}</h4>
+                  <form onSubmit={handleInvite} className="flex flex-col sm:flex-row gap-4">
+                    <input 
+                      type="email" 
+                      placeholder="colleague@agency.com" 
+                      className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-sm"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      required
+                    />
+                    <select 
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value as Role)}
+                      className="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-amber-500 text-sm font-bold"
+                    >
+                      <option value="Admin">Admin</option>
+                      <option value="Editor">Editor</option>
+                      <option value="Viewer">Viewer</option>
+                    </select>
+                    <button type="submit" className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors">
+                      {t.settings.invite}
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                <div className="mt-8 pt-8 border-t border-slate-100 text-center">
+                  <p className="text-sm text-slate-400 font-medium italic">{t.settings.adminOnly}</p>
+                </div>
+              )}
                 </div>
             </div>
 
@@ -228,7 +331,7 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
             <h3 className="text-xl font-bold text-slate-900">Brand Identity Assets</h3>
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-8">
               <div className="space-y-4">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Main Logo</label>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">{t.settings.logo}</label>
                 <div className="flex items-center gap-6">
                   <div className="w-24 h-24 bg-slate-50 border-2 border-dashed border-slate-200 rounded-[2rem] flex items-center justify-center overflow-hidden">
                     {dna.logoUrl ? (
@@ -242,6 +345,7 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
                       type="file" 
                       id="logo-upload" 
                       className="hidden" 
+                      disabled={userRole !== 'Admin'}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
@@ -254,35 +358,41 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
                         }
                       }}
                     />
-                    <label htmlFor="logo-upload" className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold cursor-pointer hover:bg-slate-800 transition-colors">
+                    <label 
+                      htmlFor="logo-upload" 
+                      className={`px-4 py-2 rounded-xl text-xs font-bold cursor-pointer transition-colors ${userRole !== 'Admin' ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                      onClick={(e) => userRole !== 'Admin' && e.preventDefault()}
+                    >
                       Change Logo
                     </label>
-                    <p className="text-[10px] text-slate-400">SVG, PNG or JPG (max 2MB)</p>
+                    <p className="text-[10px] text-slate-400">SVG, PNG or JPG (max 2MB) {userRole !== 'Admin' && '- Admin only'}</p>
                   </div>
                 </div>
               </div>
 
               <div className="space-y-4">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Brand Colors</label>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">{t.settings.colors}</label>
                 <div className="flex flex-wrap gap-4">
                   {dna.colors.map((color, i) => (
                     <div key={i} className="flex flex-col items-center gap-2">
                       <input 
                         type="color" 
                         value={color} 
+                        disabled={userRole !== 'Admin'}
                         onChange={(e) => {
                           const newColors = [...dna.colors];
                           newColors[i] = e.target.value;
                           onUpdateDNA({ ...dna, colors: newColors });
                         }}
-                        className="w-12 h-12 rounded-xl cursor-pointer border-4 border-white shadow-md"
+                        className={`w-12 h-12 rounded-xl cursor-pointer border-4 border-white shadow-md ${userRole !== 'Admin' ? 'opacity-50 grayscale' : ''}`}
                       />
                       <span className="text-[10px] font-mono font-bold text-slate-400">{color.toUpperCase()}</span>
                     </div>
                   ))}
                   <button 
-                    onClick={() => onUpdateDNA({ ...dna, colors: [...dna.colors, '#000000'] })}
-                    className="w-12 h-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-300 hover:text-brand-500 hover:border-brand-500 transition-all"
+                    onClick={() => userRole === 'Admin' && onUpdateDNA({ ...dna, colors: [...dna.colors, '#000000'] })}
+                    disabled={userRole !== 'Admin'}
+                    className={`w-12 h-12 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center text-slate-300 transition-all ${userRole === 'Admin' ? 'hover:text-brand-500 hover:border-brand-500' : 'opacity-50 cursor-not-allowed'}`}
                   >
                     +
                   </button>
@@ -290,34 +400,38 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
               </div>
 
               <div className="space-y-4">
-                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Primary Typography</label>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">{t.settings.fonts}</label>
                 <div className="space-y-2">
                   {dna.fonts.map((font, i) => (
                     <div key={i} className="flex gap-2">
                       <input 
                         type="text" 
                         value={font} 
+                        disabled={userRole !== 'Admin'}
                         onChange={(e) => {
                           const newFonts = [...dna.fonts];
                           newFonts[i] = e.target.value;
                           onUpdateDNA({ ...dna, fonts: newFonts });
                         }}
-                        className="flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold"
+                        className={`flex-1 px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold ${userRole !== 'Admin' ? 'opacity-50' : ''}`}
                       />
                       <button 
-                        onClick={() => onUpdateDNA({ ...dna, fonts: dna.fonts.filter((_, idx) => idx !== i) })}
-                        className="p-2 text-slate-300 hover:text-red-500"
+                        onClick={() => userRole === 'Admin' && onUpdateDNA({ ...dna, fonts: dna.fonts.filter((_, idx) => idx !== i) })}
+                        disabled={userRole !== 'Admin'}
+                        className={`p-2 text-slate-300 hover:text-red-500 ${userRole !== 'Admin' ? 'opacity-0' : ''}`}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                       </button>
                     </div>
                   ))}
-                  <button 
-                    onClick={() => onUpdateDNA({ ...dna, fonts: [...dna.fonts, 'Inter'] })}
-                    className="text-[11px] font-bold text-brand-600 uppercase tracking-widest px-1"
-                  >
-                    + Add Font Family
-                  </button>
+                  {userRole === 'Admin' && (
+                    <button 
+                        onClick={() => onUpdateDNA({ ...dna, fonts: [...dna.fonts, 'Inter'] })}
+                        className="text-[11px] font-bold text-brand-600 uppercase tracking-widest px-1"
+                    >
+                        + Add Font Family
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -327,20 +441,22 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
             <h3 className="text-xl font-bold text-slate-900">Brand DNA & Tone</h3>
             <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-6">
                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Brand Voice</label>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">{t.settings.voice}</label>
                   <textarea 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium leading-relaxed outline-none focus:border-brand-500 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium leading-relaxed outline-none focus:border-brand-500 transition-all disabled:opacity-50"
                     rows={3}
                     value={dna.tone}
+                    disabled={userRole === 'Viewer'}
                     onChange={(e) => onUpdateDNA({ ...dna, tone: e.target.value })}
                   />
                </div>
                <div className="space-y-2">
-                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Visual Direction</label>
+                  <label className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">{t.settings.vision}</label>
                   <textarea 
-                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium leading-relaxed outline-none focus:border-brand-500 transition-all"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm font-medium leading-relaxed outline-none focus:border-brand-500 transition-all disabled:opacity-50"
                     rows={3}
                     value={dna.imageStyle}
+                    disabled={userRole === 'Viewer'}
                     onChange={(e) => onUpdateDNA({ ...dna, imageStyle: e.target.value })}
                   />
                </div>
@@ -374,7 +490,9 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
                         </div>
                         <button 
                             onClick={() => account.connected ? onDisconnectAccount(account.platform) : onConnectAccount(account.platform)}
-                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-colors ${
+                            disabled={userRole === 'Viewer'}
+                            className={`px-4 py-2 border rounded-xl text-xs font-bold transition-all ${
+                                userRole === 'Viewer' ? 'bg-slate-100 border-slate-200 text-slate-400 cursor-not-allowed opacity-50' :
                                 account.connected ? 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100' : 'bg-brand-600 border-brand-600 text-white hover:bg-brand-700 shadow-sm'
                             }`}
                         >
@@ -399,10 +517,10 @@ const BrandSettings: React.FC<BrandSettingsProps> = ({ dna, onUpdateDNA, socialA
                     
                     <button 
                         onClick={handleSyncCatalog}
-                        disabled={isSyncing}
+                        disabled={isSyncing || userRole === 'Viewer'}
                         className="w-full py-3 bg-green-600 text-white rounded-xl font-bold text-sm shadow-lg hover:bg-green-700 transition-all disabled:opacity-70 flex items-center justify-center gap-2 mb-6"
                     >
-                        {isSyncing ? 'Syncing...' : 'Sync Catalog Now'}
+                        {isSyncing ? 'Syncing...' : userRole === 'Viewer' ? 'Sync Unavailable' : 'Sync Catalog Now'}
                     </button>
 
                     <div className="space-y-3">

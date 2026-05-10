@@ -1,12 +1,16 @@
 
 import React from 'react';
+import { Globe } from 'lucide-react';
 
 interface LandingProps {
   onStart: () => void;
   onNavigate: (step: 'legal' | 'support', type?: 'privacy' | 'terms') => void;
+  t: any;
+  lang: 'en' | 'fr';
+  onLanguageChange: (lang: 'en' | 'fr') => void;
 }
 
-const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
+const Landing: React.FC<LandingProps> = ({ onStart, onNavigate, t, lang, onLanguageChange }) => {
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: 'smooth' });
@@ -35,9 +39,19 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
                   <button onClick={() => scrollToSection('features')} className="hover:text-white transition-colors">Features</button>
                   <button onClick={() => scrollToSection('pricing')} className="hover:text-white transition-colors">Pricing</button>
               </div>
-              <button onClick={onStart} className="px-6 py-2.5 bg-white text-brand-950 rounded-full font-bold text-sm hover:bg-slate-200 transition-all shadow-lg transform hover:-translate-y-0.5">
-                  Launch App
-              </button>
+              <div className="flex items-center gap-4">
+                  <button 
+                    onClick={() => onLanguageChange(lang === 'en' ? 'fr' : 'en')}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors group flex items-center gap-2"
+                    title={lang === 'en' ? 'Passer en Français' : 'Switch to English'}
+                  >
+                    <Globe className="w-5 h-5 text-slate-300 group-hover:text-white transition-colors" />
+                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-white">{lang}</span>
+                  </button>
+                  <button onClick={onStart} className="px-6 py-2.5 bg-white text-brand-950 rounded-full font-bold text-sm hover:bg-slate-200 transition-all shadow-lg transform hover:-translate-y-0.5">
+                      {t.auth.login}
+                  </button>
+              </div>
           </div>
       </nav>
 
@@ -50,18 +64,20 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-500 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-500"></span>
             </span>
-            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-slate-300">Next-Gen African Marketing Hub</span>
+            <span className="text-[10px] font-bold tracking-[0.25em] uppercase text-slate-300">{t.welcome.badge}</span>
           </div>
           
-          <h1 className="text-6xl md:text-8xl font-bold tracking-tight leading-[1.05] text-white">
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-[1.1] text-white">
             Digital presence, <br/>
             <span className="gradient-text-brand">
-                Culturally Amplified.
+              {lang === 'fr' 
+                ? "Transformez votre marque africaine grâce à l'IA générative" 
+                : "Transform your African brand with generative AI"}
             </span>
           </h1>
           
-          <p className="max-w-2xl mx-auto text-slate-400 text-lg md:text-xl leading-relaxed font-light">
-            Analysez votre marque, générez des campagnes à fort impact local et créez des assets visuels premium avec l'intelligence culturelle de Gemini 3.
+          <p className="max-w-2xl mx-auto text-slate-400 text-base md:text-lg leading-relaxed font-light">
+            {t.welcome.desc}
           </p>
           
           <div className="flex flex-col sm:flex-row gap-5 justify-center pt-8">
@@ -69,14 +85,14 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
               onClick={onStart}
               className="px-10 py-5 bg-brand-600 hover:bg-brand-500 text-white rounded-full font-bold text-lg shadow-[0_0_40px_rgba(234,88,12,0.4)] transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-3"
             >
-              Start Creating
+              {t.landing.cta}
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
             </button>
             <button 
               onClick={scrollToPricing}
               className="px-10 py-5 bg-white/5 border border-white/10 text-white rounded-full font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-3 backdrop-blur-md"
             >
-              View Pricing
+              {t.landing.demo}
             </button>
           </div>
         </div>
@@ -90,17 +106,17 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
                   <div className="space-y-10">
                       <div className="space-y-4">
                         <span className="text-brand-600 font-bold uppercase tracking-widest text-xs">The Vision</span>
-                        <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Speak your customer's <br/><span className="text-brand-600">cultural language.</span></h2>
+                        <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Speak your customer's <br/><span className="text-brand-600">cultural language.</span></h2>
                         <p className="text-lg text-slate-600 leading-relaxed font-medium">
-                            La plupart des outils d'IA sont entraînés sur des données occidentales. AfriBrand AI comprend les nuances du marché africain : de l'argot local aux festivals régionaux.
+                            {t.welcome.desc}
                         </p>
                       </div>
                       
                       <div className="grid grid-cols-1 gap-6">
                           {[
-                              { title: "Intelligence Culturelle", desc: "Slang local (Nouchi, Pidgin, Wolof), fêtes nationales et nuances de marché intégrées." },
-                              { title: "DNA de Marque Premium", desc: "Analyse automatique de votre identité pour des contenus toujours 'on-brand'." },
-                              { title: "Formats Multi-Plateformes", desc: "Un clic pour générer vos posts Instagram, TikTok, WhatsApp et LinkedIn." }
+                              { title: t.dna.context, desc: "Slang local (Nouchi, Pidgin, Wolof), fêtes nationales et nuances de marché intégrées." },
+                              { title: t.dna.title, desc: "Analyse automatique de votre identité pour des contenus toujours 'on-brand'." },
+                              { title: t.assets.hub, desc: "Un clic pour générer vos posts Instagram, TikTok, WhatsApp et LinkedIn." }
                           ].map((item, i) => (
                               <div key={i} className="flex gap-5 group">
                                   <div className="w-14 h-14 shrink-0 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-brand-600 shadow-sm group-hover:border-brand-500 transition-colors">
@@ -130,7 +146,7 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
       <section id="features" className="py-32 px-6">
           <div className="max-w-7xl mx-auto space-y-20">
               <div className="text-center space-y-4">
-                  <h2 className="text-4xl md:text-5xl font-bold tracking-tight">Everything you need to <br/> scale your SME.</h2>
+                  <h2 className="text-3xl md:text-4xl font-bold tracking-tight">Everything you need to <br/> scale your SME.</h2>
                   <p className="text-slate-400 max-w-xl mx-auto">Une suite complète d'outils marketing pilotés par l'IA la plus avancée au monde.</p>
               </div>
 
@@ -185,7 +201,7 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
       <section id="pricing" className="py-32 bg-white text-brand-950 relative overflow-hidden">
           <div className="max-w-7xl mx-auto px-6 relative z-10">
               <div className="text-center space-y-4 mb-20">
-                  <h2 className="text-4xl md:text-5xl font-black tracking-tight">Simple Pricing, <br/>Local Currency.</h2>
+                  <h2 className="text-3xl md:text-4xl font-black tracking-tight">Simple Pricing, <br/>Local Currency.</h2>
                   <p className="text-slate-500 font-medium">Pas de carte bancaire internationale requise. Payez via Mobile Money.</p>
               </div>
 
@@ -207,7 +223,7 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
                               </li>
                           ))}
                       </ul>
-                      <button onClick={onStart} className="w-full py-4 bg-slate-200 hover:bg-slate-300 rounded-2xl font-bold transition-all">Get Started</button>
+                      <button onClick={onStart} className="w-full py-4 bg-slate-200 hover:bg-slate-300 rounded-2xl font-bold transition-all">{t.landing.cta}</button>
                   </div>
 
                   {/* Pro Plan */}
@@ -228,7 +244,7 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
                               </li>
                           ))}
                       </ul>
-                      <button onClick={onStart} className="w-full py-4 bg-brand-600 hover:bg-brand-500 rounded-2xl font-bold shadow-xl shadow-brand-600/20 transition-all">Go Pro Now</button>
+                      <button onClick={onStart} className="w-full py-4 bg-brand-600 hover:bg-brand-500 rounded-2xl font-bold shadow-xl shadow-brand-600/20 transition-all">{t.landing.cta}</button>
                   </div>
 
                   {/* Enterprise Plan */}
@@ -247,7 +263,7 @@ const Landing: React.FC<LandingProps> = ({ onStart, onNavigate }) => {
                               </li>
                           ))}
                       </ul>
-                      <button onClick={() => onNavigate('support')} className="w-full py-4 border-2 border-slate-900 rounded-2xl font-bold hover:bg-slate-900 hover:text-white transition-all">Contact Us</button>
+                      <button onClick={() => onNavigate('support')} className="w-full py-4 border-2 border-slate-900 rounded-2xl font-bold hover:bg-slate-900 hover:text-white transition-all">{t.nav.support}</button>
                   </div>
               </div>
           </div>

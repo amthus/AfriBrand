@@ -4,9 +4,10 @@ import React from 'react';
 interface LegalViewProps {
   type: 'privacy' | 'terms';
   onBack: () => void;
+  t: any;
 }
 
-const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
+const LegalView: React.FC<LegalViewProps> = ({ type, onBack, t }) => {
   return (
     <div className="max-w-4xl mx-auto py-20 px-6 animate-in slide-in-from-bottom duration-500">
       <button 
@@ -14,13 +15,13 @@ const LegalView: React.FC<LegalViewProps> = ({ type, onBack }) => {
         className="mb-8 flex items-center gap-2 text-slate-500 hover:text-brand-600 transition-colors font-bold text-sm uppercase tracking-widest"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-        Go Back
+        {t.nav.back}
       </button>
 
-      <div className="bg-white p-12 rounded-[3rem] shadow-2xl border border-slate-100 space-y-10 text-slate-800">
+      <div className="bg-white dark:bg-brand-900/40 p-12 rounded-[3rem] shadow-2xl border border-slate-100 dark:border-white/5 space-y-10 text-slate-800 dark:text-slate-200">
         <div className="space-y-4">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">
-                {type === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
+            <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight">
+                {type === 'privacy' ? t.landing.privacy : t.landing.terms}
             </h1>
             <p className="text-slate-500 text-sm font-medium">Last updated: February 14, 2025</p>
         </div>

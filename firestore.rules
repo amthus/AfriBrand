@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} { 
+      allow read, write: if false; 
+    }
+
+    // Phase 3: Primitives
+    function isValidId(id) { 
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); 
+    }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { 
+      return isSignedIn() && request.auth.uid == userId; 
+    }
+
+    // Validation Blueprint for Brand DNA
+    function isValidBrandDNA(data) {
+      return data.keys().hasAll(['name', 'colors', 'fonts', 'tone', 'imageStyle', 'keywords', 'localContext', 'insights', 'improvements', 'updatedAt'])
+        && data.name is string && data.name.size() <= 256
+        && data.colors is list && data.colors.size() <= 20
+        && data.fonts is list && data.fonts.size() <= 20
+        && data.tone is string && data.tone.size() <= 500
+        && data.imageStyle is string && data.imageStyle.size() <= 2000
+        && data.keywords is list && data.keywords.size() <= 50
+        && data.localContext is string && data.localContext.size() <= 2000
+        && data.insights is list && data.insights.size() <= 20
+        && data.improvements is list && data.improvements.size() <= 20
+        && data.updatedAt is string;
+    }
+
+    // Brands collection
+    match /brands/{userId} {
+      allow get, list, delete: if isOwner(userId);
+
+      allow create: if isOwner(userId) 
+        && isValidBrandDNA(incoming());
+
+      allow update: if isOwner(userId)
+        && isValidBrandDNA(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name', 'colors', 'fonts', 'tone', 'imageStyle', 'keywords', 'localContext', 'insights', 'improvements', 'updatedAt', 'logoUrl', 'secondaryColors']);
+    }
+  }
+}

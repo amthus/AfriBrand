@@ -1,5 +1,5 @@
 
-import { SocialPlatform, RegionSchedule, TeamMember, ActivityLog, Product } from './types';
+import { SocialPlatform, RegionSchedule, TeamMember, ActivityLog, Product } from '../types';
 
 // Mock Social Media API Integration
 // In a real application, this would interface with Meta Graph API and WhatsApp Business API

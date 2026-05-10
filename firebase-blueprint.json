@@ -1,0 +1,28 @@
+{
+  "entities": {
+    "BrandDNA": {
+      "title": "Brand DNA",
+      "description": "Core identity system synthesized by AfriBrand AI",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Business Name" },
+        "colors": { "type": "array", "items": { "type": "string" }, "description": "Color Palette" },
+        "fonts": { "type": "array", "items": { "type": "string" }, "description": "Selected Typography" },
+        "tone": { "type": "string", "description": "Brand Voice/Tone" },
+        "imageStyle": { "type": "string", "description": "Visual direction for AI generation" },
+        "keywords": { "type": "array", "items": { "type": "string" }, "description": "Core keywords" },
+        "localContext": { "type": "string", "description": "Market alignment context" },
+        "insights": { "type": "array", "items": { "type": "string" }, "description": "Strategic insights" },
+        "improvements": { "type": "array", "items": { "type": "string" }, "description": "Optimization path" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["name", "colors", "fonts", "tone", "imageStyle", "keywords", "localContext", "insights", "improvements", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/brands/{userId}": {
+      "schema": "BrandDNA",
+      "description": "User specific brand identity storage"
+    }
+  }
+}

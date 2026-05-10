@@ -25,6 +25,11 @@ export interface Campaign {
   suggestedPlatforms: string[];
   videoScript?: string;
   scheduledDate?: string;
+  postSuggestions?: {
+    platform: SocialPlatform;
+    caption: string;
+    imagePrompt: string;
+  }[];
 }
 
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5' | '1.91:1' | '2:3' | '3:4';
@@ -39,7 +44,7 @@ export interface Product {
   imageUrl: string;
 }
 
-export type SocialPlatform = 'facebook' | 'instagram' | 'whatsapp';
+export type SocialPlatform = 'facebook' | 'instagram' | 'whatsapp' | 'linkedin';
 
 export interface SocialAccount {
   platform: SocialPlatform;
